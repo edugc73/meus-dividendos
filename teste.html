@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GonçaEGC | Control</title>
+    
+    <!-- Dependências -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Configuração Tailwind -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#050505', // Preto ultra profundo
+                        surface: '#0a0a0a',
+                        surfaceBorder: 'rgba(255, 255, 255, 0.06)',
+                        brand: {
+                            emerald: '#10b981', 
+                            cyan: '#06b6d4',    
+                            indigo: '#6366f1',  
+                        }
+                    },
+                    boxShadow: {
+                        'glow-indigo': '0 0 20px -5px rgba(99, 102, 241, 0.3)',
+                        'glow-emerald': '0 0 20px -5px rgba(16, 185, 129, 0.3)',
+                        'glow-cyan': '0 0 20px -5px rgba(6, 182, 212, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #050505;
+            color: #fafafa;
+            overflow: hidden; 
+        }
+        
+        /* Efeito Glassmorphism Premium */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--tw-colors-surfaceBorder);
+        }
+
+        /* Scrollbar Invisível/Elegante */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animações */
+        .fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Iframe transition */
+        #app-frame {
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(0.98);
+            opacity: 0;
+        }
+        #app-frame.loaded {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .blur-value {
+            filter: blur(8px);
+            opacity: 0.5;
+            user-select: none;
+            transition: all 0.4s ease;
+        }
+
+        /* Sidebar transitions */
+        .sidebar-transition {
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @media (min-width: 768px) {
+            .sidebar-collapsed { width: 5rem !important; }
+            .sidebar-collapsed .sidebar-text,
+            .sidebar-collapsed .profile-info { display: none; opacity: 0; }
+            .sidebar-collapsed .nav-btn { justify-content: center; padding: 0.75rem 0; }
+            .sidebar-collapsed .logo-area,
+            .sidebar-collapsed .profile-area { justify-content: center; padding-left: 0; padding-right: 0; }
+        }
+
+        /* Mesh Gradient Refinado */
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse-slow 10s infinite alternate ease-in-out;
+        }
+        @keyframes pulse-slow {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.3; }
+            100% { transform: scale(1.2) translate(2%, 2%); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="flex h-screen antialiased selection:bg-brand-indigo/30 selection:text-indigo-200 relative overflow-hidden">
+
+    <!-- Ambient Lights (Substitui o Mesh Antigo por algo mais suave) -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="ambient-light bg-brand-indigo/20 w-[600px] h-[600px] top-[-200px] left-[-200px]"></div>
+        <div class="ambient-light bg-brand-emerald/10 w-[500px] h-[500px] bottom-[-100px] right-[-100px]" style="animation-delay: -5s"></div>
+    </div>
+
+    <!-- Overlay Mobile -->
+    <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-background/80 backdrop-blur-md z-40 hidden md:hidden transition-opacity opacity-0" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Sidebar Lateral -->
+    <aside id="sidebar" class="sidebar-transition fixed md:relative -translate-x-full md:translate-x-0 w-64 glass-panel flex flex-col h-full border-r-0 border-white/5 z-50 md:z-20 shrink-0">
+        
+        <button onclick="toggleSidebar()" aria-label="Recolher Menu" class="hidden md:flex items-center justify-center absolute -right-4 top-8 w-8 h-8 bg-surface border border-white/10 rounded-full text-zinc-400 hover:text-white hover:border-brand-indigo transition-all shadow-xl z-50">
+            <i id="sidebar-toggle-icon" data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+
+        <button onclick="toggleMobileSidebar()" class="md:hidden absolute right-4 top-6 text-zinc-400 hover:text-white">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Logo -->
+        <div class="h-24 flex items-center px-6 logo-area transition-all">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-b from-zinc-800 to-zinc-900 border border-white/10 flex items-center justify-center shadow-lg shadow-black shrink-0 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-brand-indigo/20 opacity-50"></div>
+                    <i data-lucide="gem" class="text-white w-4 h-4 relative z-10"></i>
+                </div>
+                <span class="sidebar-text text-xl font-semibold tracking-tight text-white whitespace-nowrap">
+                    Gonça<span class="text-zinc-500 font-normal">EGC</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Navegação -->
+        <nav class="flex-1 overflow-y-auto py-2 px-3 space-y-1 overflow-x-hidden">
+            <p class="sidebar-text px-3 text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-3 mt-4 whitespace-nowrap">Principal</p>
+            
+            <button onclick="navigate('home')" id="nav-home" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-white/5 text-white ring-1 ring-white/10 shadow-sm shadow-black/20">
+                <i data-lucide="layout-grid" class="w-4 h-4 text-brand-indigo shrink-0"></i>
+                <span class="sidebar-text whitespace-nowrap">Visão Geral</span>
+            </button>
+
+            <div class="pt-6 pb-1 sidebar-text">
+                <p class="px-3 text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2 whitespace-nowrap">Aplicações</p>
+            </div>
+
+            <button onclick="navigate('financas')" id="nav-financas" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="wallet" class="w-4 h-4 shrink-0 transition-colors group-hover:text-brand-emerald"></i>
+                <span class="sidebar-text whitespace-nowrap">Finanças</span>
+            </button>
+
+            <button onclick="navigate('invest')" id="nav-invest" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="line-chart" class="w-4 h-4 shrink-0 transition-colors group-hover:text-brand-cyan"></i>
+                <span class="sidebar-text whitespace-nowrap">Investimentos</span>
+            </button>
+
+            <div class="pt-6 pb-1 sidebar-text">
+                <p class="px-3 text-[10px] font-semibold text-zinc-500 uppercase tracking-widest mb-2 whitespace-nowrap">Sistema</p>
+            </div>
+
+            <button class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
+                <span class="sidebar-text whitespace-nowrap">Clientes</span>
+            </button>
+            <button class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="settings-2" class="w-4 h-4 shrink-0"></i>
+                <span class="sidebar-text whitespace-nowrap">Ajustes</span>
+            </button>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-white/5 mt-auto">
+            <div class="profile-area flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5">
+                <div class="relative shrink-0">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=18181b&color=fff" alt="User" class="w-9 h-9 rounded-full ring-2 ring-surface">
+                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-surface rounded-full"></div>
+                </div>
+                <div class="profile-info overflow-hidden">
+                    <p class="text-sm font-medium text-zinc-200 truncate">Administrador</p>
+                    <p class="text-xs text-zinc-500 truncate">admin@goncacrm.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Área Principal -->
+    <main class="flex-1 flex flex-col h-screen relative z-10 w-full overflow-hidden">
+
+        <!-- Topbar -->
+        <header class="h-20 glass-panel border-b-0 border-white/5 flex items-center justify-between px-6 z-30 sticky top-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMobileSidebar()" class="md:hidden text-zinc-400 hover:text-white">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div class="flex flex-col">
+                    <h1 id="page-title" class="text-lg font-semibold text-white tracking-tight leading-none">Visão Geral</h1>
+                    <span id="current-date" class="text-xs text-zinc-500 mt-1"></span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1 sm:gap-2 bg-white/5 p-1 rounded-full border border-white/5">
+                <button id="privacy-btn" onclick="togglePrivacyMode()" class="p-2 text-white bg-white/10 hover:text-white rounded-full transition-all" title="Modo Privacidade">
+                    <i id="privacy-icon" data-lucide="eye-off" class="w-4 h-4"></i>
+                </button>
+
+                <div class="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
+
+                <comment-tag id="1"><button onclick="toggleNotifications()" class="p-2 text-zinc-400 hover:text-white rounded-full transition-all relative"></comment-tag id="1" text="Adicionar `aria-label=\"Notificações\"` melhora a acessibilidade para usuários de leitores de tela, já que este botão contém apenas um ícone sem texto descritivo. \n\nExemplo: `<button onclick=\"toggleNotifications()\" aria-label=\"Notificações\" ...>`" type="suggestion">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-emerald rounded-full border-2 border-surface"></span>
+                </button>
+                
+                <button id="popout-btn" onclick="openExternal()" class="hidden p-2 text-zinc-400 hover:text-white rounded-full transition-all" title="Abrir em nova guia">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Conteúdo Scrollável -->
+        <div class="flex-1 overflow-y-auto relative z-10">
+            
+            <!-- VIEW: HOME (Dashboard) -->
+            <div id="view-home" class="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8 fade-in pb-20">
+                
+                <!-- Hero Widget -->
+                <div class="glass-panel rounded-3xl p-6 sm:p-8 border-white/10 relative overflow-hidden group shadow-2xl shadow-black/50">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-indigo/10 via-transparent to-transparent opacity-50"></div>
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-brand-indigo/20 rounded-full blur-[100px] -mr-32 -mt-32 transition-all duration-700 ease-out group-hover:bg-brand-indigo/30"></div>
+                    
+                    <div class="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6">
+                                <span class="flex h-2 w-2 relative">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-emerald opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-emerald"></span>
+                                </span>
+                                <span class="text-xs font-medium text-zinc-300">Sistema Sincronizado</span>
+                            </div>
+                            <p class="text-sm font-medium text-zinc-400 mb-2">Patrimônio Líquido Consolidado</p>
+                            <h3 class="text-4xl sm:text-5xl font-bold text-white tracking-tighter sensitive-value blur-value">
+                                <span id="patrimonio-total">Aguardando...</span>
+                            </h3>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                            <div class="bg-surface/50 backdrop-blur-md rounded-2xl p-5 border border-white/5 flex-1 min-w-[160px] hover:border-white/10 transition-colors">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-6 h-6 rounded-md bg-brand-emerald/10 flex items-center justify-center">
+                                        <i data-lucide="wallet" class="w-3 h-3 text-brand-emerald"></i>
+                                    </div>
+                                    <span class="text-xs text-zinc-400 font-medium">Conta Corrente</span>
+                                </div>
+                                <p class="text-xl font-semibold text-white tracking-tight sensitive-value blur-value" id="patrimonio-financas">--</p>
+                            </div>
+                            <div class="bg-surface/50 backdrop-blur-md rounded-2xl p-5 border border-white/5 flex-1 min-w-[160px] hover:border-white/10 transition-colors">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-6 h-6 rounded-md bg-brand-cyan/10 flex items-center justify-center">
+                                        <i data-lucide="line-chart" class="w-3 h-3 text-brand-cyan"></i>
+                                    </div>
+                                    <span class="text-xs text-zinc-400 font-medium">Investimentos</span>
+                                </div>
+                                <p class="text-xl font-semibold text-white tracking-tight sensitive-value blur-value" id="patrimonio-invest">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards de Módulos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Finanças -->
+                    <div onclick="navigate('financas')" class="glass-panel rounded-3xl p-6 border-white/5 hover:border-brand-emerald/30 hover:shadow-glow-emerald cursor-pointer group transition-all duration-500 relative overflow-hidden transform hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-12 relative z-10">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/10 flex items-center justify-center text-brand-emerald shadow-inner">
+                                <i data-lucide="arrow-left-right" class="w-6 h-6"></i>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                                <i data-lucide="arrow-right" class="w-4 h-4 text-white"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2 tracking-tight relative z-10">GonçaFinances</h3>
+                        <p class="text-sm text-zinc-400 leading-relaxed relative z-10">Controle inteligente de orçamento, gestão de despesas e categorização automatizada.</p>
+                        <div class="absolute bottom-0 right-0 w-48 h-48 bg-brand-emerald/10 rounded-full blur-[80px] -mr-20 -mb-20 transition-all duration-700 group-hover:bg-brand-emerald/20"></div>
+                    </div>
+
+                    <!-- Investimentos -->
+                    <div onclick="navigate('invest')" class="glass-panel rounded-3xl p-6 border-white/5 hover:border-brand-cyan/30 hover:shadow-glow-cyan cursor-pointer group transition-all duration-500 relative overflow-hidden transform hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-12 relative z-10">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/10 flex items-center justify-center text-brand-cyan shadow-inner">
+                                <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                                <i data-lucide="arrow-right" class="w-4 h-4 text-white"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2 tracking-tight relative z-10">GonçaInvest</h3>
+                        <p class="text-sm text-zinc-400 leading-relaxed relative z-10">Monitoramento de portfólio global, tracking de dividendos e análise de rentabilidade.</p>
+                        <div class="absolute bottom-0 right-0 w-48 h-48 bg-brand-cyan/10 rounded-full blur-[80px] -mr-20 -mb-20 transition-all duration-700 group-hover:bg-brand-cyan/20"></div>
+                    </div>
+                </div>
+
+                <!-- Gráfico e Metas -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Gráfico (Ocupa 2/3) -->
+                    <div class="lg:col-span-2 glass-panel rounded-3xl p-6 border-white/5">
+                        <div class="flex justify-between items-center mb-8">
+                            <div>
+                                <h3 class="text-lg font-semibold text-white tracking-tight">Dividendos por Ano</h3>
+                                <p class="text-xs text-zinc-500 mt-1">Acumulado anual sincronizado via Google Sheets</p>
+                            </div>
+                            <button class="text-xs font-medium px-3 py-1.5 rounded-lg bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white transition-colors border border-white/5">
+                                Relatório Completo
+                            </button>
+                        </div>
+                        <div class="h-[250px] w-full relative">
+                            <comment-tag id="2"><canvas id="crmChart"></canvas></comment-tag id="2" text="Adicionar os atributos `role=\"img\"` e `aria-label` garante que os leitores de tela consigam identificar que se trata de um gráfico e descrevê-lo, tornando a aplicação mais inclusiva.\n\nExemplo: `<canvas id=\"crmChart\" role=\"img\" aria-label=\"Gráfico de linha mostrando a evolução dos dividendos por ano\"></canvas>`" type="suggestion">
+                        </div>
+                    </div>
+                    
+                    <!-- Metas (Ocupa 1/3) -->
+                    <div class="glass-panel rounded-3xl p-6 border-white/5 flex flex-col justify-between relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h3 class="text-lg font-semibold text-white tracking-tight mb-1">Metas de Dividendos</h3>
+                            <p class="text-xs text-zinc-500 mb-8">Calculado em tempo real via planilha</p>
+                            
+                            <div class="space-y-6">
+                                <!-- Progresso 1: Meta de 5k -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-zinc-300">Meta Mensal (R$ 5k)</span>
+                                        <span id="valor-meta-mensal" class="text-sm text-brand-emerald font-semibold sensitive-value blur-value">--%</span>
+                                    </div>
+                                    <div class="flex justify-between items-end mb-2">
+                                        <span id="text-meta-mensal" class="text-[10px] text-zinc-500">Média atual: R$ 0,00</span>
+                                    </div>
+                                    <div class="w-full bg-black/50 rounded-full h-1.5 border border-white/5 overflow-hidden">
+                                        <div id="bar-meta-mensal" class="bg-brand-emerald h-full rounded-full relative transition-all duration-1000" style="width: 0%">
+                                            <div class="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Progresso 2: Bater ano passado -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span id="titulo-meta-ano" class="text-sm font-medium text-zinc-300">Crescimento Anual</span>
+                                        <span id="valor-meta-ano" class="text-sm text-brand-cyan font-semibold sensitive-value blur-value">--%</span>
+                                    </div>
+                                    <div class="flex justify-between items-end mb-2">
+                                        <span id="text-meta-ano" class="text-[10px] text-zinc-500">Ano atual vs anterior</span>
+                                    </div>
+                                    <div class="w-full bg-black/50 rounded-full h-1.5 border border-white/5 overflow-hidden">
+                                        <div id="bar-meta-ano" class="bg-brand-cyan h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <!-- Progresso 3: Aportes Regulares -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-2">
+                                        <span class="text-sm font-medium text-zinc-300">Aportes Regulares</span>
+                                        <span class="text-sm text-brand-indigo font-semibold sensitive-value blur-value">Em dia</span>
+                                    </div>
+                                    <div class="w-full bg-black/50 rounded-full h-1.5 border border-white/5 overflow-hidden">
+                                        <div class="bg-brand-indigo h-full rounded-full" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: IFRAME APP -->
+            <div id="view-app" class="h-full w-full hidden relative">
+                
+                <!-- Skeleton Loader Premium -->
+                <div id="skeleton-loader" class="absolute inset-0 z-20 bg-background/95 backdrop-blur-2xl flex items-center justify-center transition-opacity duration-700">
+                    <div class="relative flex flex-col items-center p-4 text-center">
+                        <div id="module-glow" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[100px] animate-pulse opacity-50"></div>
+                        
+                        <div id="module-icon-box" class="relative w-20 h-20 rounded-2xl bg-surface border border-white/10 flex items-center justify-center shadow-2xl mb-6 z-10 overflow-hidden">
+                            <!-- Injetado via JS -->
+                        </div>
+
+                        <h3 id="module-loading-title" class="text-xl font-semibold text-white mb-3 z-10 relative tracking-tight">Iniciando...</h3>
+                        <div class="px-4 py-2 rounded-full bg-white/5 border border-white/10 z-10 relative flex items-center gap-2">
+                            <span class="flex gap-1">
+                                <span class="w-1 h-1 rounded-full bg-zinc-400 animate-bounce" style="animation-delay: 0s"></span>
+                                <span class="w-1 h-1 rounded-full bg-zinc-400 animate-bounce" style="animation-delay: 0.15s"></span>
+                                <span class="w-1 h-1 rounded-full bg-zinc-400 animate-bounce" style="animation-delay: 0.3s"></span>
+                            </span>
+                            <span class="text-xs text-zinc-400 font-medium ml-1">Estabelecendo conexão segura</span>
+                        </div>
+                    </div>
+                </div>
+
+                <comment-tag id="3"><iframe id="app-frame" src="about:blank" title="Módulo da Aplicação" class="w-full h-full border-none relative z-10 bg-background rounded-tl-2xl border-t border-l border-white/5 shadow-2xl"></iframe></comment-tag id="3" text="Adicionar o atributo `sandbox=\"allow-scripts allow-same-origin allow-forms\"` ao iframe aumenta a segurança, limitando o que as aplicações carregadas podem executar no navegador do usuário. Isto é uma boa prática para Dashboards." type="suggestion">
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Overlay Notificações -->
+    <div id="notification-overlay" class="fixed inset-0 bg-background/60 backdrop-blur-sm z-50 hidden transition-opacity duration-300 opacity-0" onclick="toggleNotifications()"></div>
+    
+    <!-- Painel Lateral Notificações -->
+    <aside id="notification-panel" class="fixed top-0 right-0 h-full w-[340px] glass-panel border-l-0 border-white/10 z-50 transform translate-x-full transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col shadow-2xl shadow-black">
+        <div class="h-20 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-white/5 backdrop-blur-md">
+            <div class="flex items-center gap-3">
+                <h2 class="text-base font-semibold text-white tracking-tight">Notificações</h2>
+                <span class="px-2 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-bold tracking-widest uppercase">2 Novas</span>
+            </div>
+            <button onclick="toggleNotifications()" class="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-white/5 transition-all">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+            <!-- Item Notificação 1 -->
+            <div class="bg-white/5 border border-white/5 rounded-2xl p-4 flex gap-4 hover:bg-white/10 transition-colors cursor-pointer group">
+                <div class="w-8 h-8 rounded-full bg-brand-emerald/10 flex items-center justify-center shrink-0 text-brand-emerald border border-brand-emerald/20">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-white mb-1">Meta de Economia Atingida!</h4>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Você alcançou 85% de retenção da sua receita mensal.</p>
+                    <span class="text-[10px] text-zinc-500 mt-2 block font-medium uppercase tracking-wider">Há 2 horas</span>
+                </div>
+            </div>
+
+            <!-- Item Notificação 2 -->
+            <div class="bg-transparent border border-transparent rounded-2xl p-4 flex gap-4 hover:bg-white/5 transition-colors cursor-pointer group">
+                <div class="w-8 h-8 rounded-full bg-brand-cyan/10 flex items-center justify-center shrink-0 text-brand-cyan">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-zinc-200 mb-1">Atualização Pendente</h4>
+                    <p class="text-xs text-zinc-500 leading-relaxed">Atualize o CSV com o fecho do mercado dos seus ativos.</p>
+                    <comment-tag id="4"><span class="text-[10px] text-zinc-600 mt-2 block font-medium uppercase tracking-wider">Ontem</span></comment-tag id="4" text="A cor `text-zinc-600` sobre o fundo escuro possui baixo contraste e dificulta a leitura. Recomenda-se mudar para `text-zinc-500` ou `text-zinc-400` para atender aos padrões de acessibilidade visual." type="suggestion">
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-white/5 shrink-0">
+            <button onclick="toggleNotifications()" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-white transition-all border border-white/5">
+                Marcar todas como lidas
+            </button>
+        </div>
+    </aside>
+
+    <!-- Iframes Invisíveis -->
+    <div class="absolute w-0 h-0 overflow-hidden opacity-0 pointer-events-none">
+        <iframe id="bg-financas" src="financas.html" aria-hidden="true"></iframe>
+        <iframe id="bg-invest" src="invest.html" aria-hidden="true"></iframe>
+    </div>
+
+    <script>
+        // Inicializar ícones
+        lucide.createIcons();
+
+        // Data Atual Customizada
+        const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+        let dateStr = new Date().toLocaleDateString('pt-BR', dateOptions);
+        document.getElementById('current-date').innerText = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+        // Estado do App
+        let currentAppUrl = '';
+        let isPrivacyMode = true;
+        let saldos = { financas: 0, invest: 0 };
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        function atualizarPatrimonio() {
+            document.getElementById('patrimonio-total').innerText = formatCurrency(saldos.financas + saldos.invest);
+            document.getElementById('patrimonio-financas').innerText = formatCurrency(saldos.financas);
+            document.getElementById('patrimonio-invest').innerText = formatCurrency(saldos.invest);
+        }
+
+        // Mock Data: Tempo reduzido de 1500ms para 100ms para exibição instantânea
+        setTimeout(() => {
+            window.postMessage({action: 'sync_data', module: 'financas', value: 24500.50}, '*');
+            window.postMessage({action: 'sync_data', module: 'invest', value: 142300.00}, '*');
+        }, 100);
+
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (data && data.action === 'sync_data') {
+                if (data.module === 'financas') saldos.financas = parseFloat(data.value) || 0;
+                if (data.module === 'invest') saldos.invest = parseFloat(data.value) || 0;
+                atualizarPatrimonio();
+            }
+        });
+
+        // Toggles
+        let isNotificationsOpen = false;
+        function toggleNotifications() {
+            isNotificationsOpen = !isNotificationsOpen;
+            const overlay = document.getElementById('notification-overlay');
+            const panel = document.getElementById('notification-panel');
+            
+            if (isNotificationsOpen) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    panel.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                overlay.classList.add('opacity-0');
+                panel.classList.add('translate-x-full');
+                setTimeout(() => overlay.classList.add('hidden'), 500); 
+            }
+        }
+
+        let isSidebarCollapsed = false;
+        function toggleSidebar() {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('sidebar-toggle-icon');
+            
+            if (isSidebarCollapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        }
+
+        let isMobileSidebarOpen = false;
+        function toggleMobileSidebar() {
+            isMobileSidebarOpen = !isMobileSidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-sidebar-overlay');
+
+            if(isMobileSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 400);
+            }
+        }
+
+        function togglePrivacyMode() {
+            isPrivacyMode = !isPrivacyMode;
+            const icon = document.getElementById('privacy-icon');
+            const btn = document.getElementById('privacy-btn');
+            
+            if (isPrivacyMode) {
+                icon.setAttribute('data-lucide', 'eye-off');
+                btn.classList.add('bg-white/10', 'text-white');
+            } else {
+                icon.setAttribute('data-lucide', 'eye');
+                btn.classList.remove('bg-white/10', 'text-white');
+            }
+            lucide.createIcons();
+
+            document.querySelectorAll('.sensitive-value').forEach(el => {
+                if(isPrivacyMode) el.classList.add('blur-value');
+                else el.classList.remove('blur-value');
+            });
+        }
+
+        // Navegação Modular
+        const modulesConfig = {
+            financas: {
+                title: 'Controle Financeiro', url: 'financas.html', color: 'emerald', icon: 'arrow-left-right'
+            },
+            invest: {
+                title: 'Gestão de Portfólio', url: 'invest.html', color: 'cyan', icon: 'pie-chart'
+            }
+        };
+
+        function navigate(moduleKey) {
+            if(isMobileSidebarOpen) toggleMobileSidebar();
+
+            const homeView = document.getElementById('view-home');
+            const appView = document.getElementById('view-app');
+            const frame = document.getElementById('app-frame');
+            const title = document.getElementById('page-title');
+            const popoutBtn = document.getElementById('popout-btn');
+            const skeleton = document.getElementById('skeleton-loader');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-all';
+            });
+
+            const activeBtn = document.getElementById(`nav-${moduleKey}`);
+
+            if (moduleKey === 'home') {
+                homeView.classList.remove('hidden');
+                appView.classList.add('hidden');
+                frame.src = 'about:blank';
+                title.innerText = 'Visão Geral';
+                activeBtn.className = 'nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-white/5 text-white ring-1 ring-white/10 shadow-sm shadow-black/20';
+                popoutBtn.classList.add('hidden');
+                currentAppUrl = '';
+                return;
+            }
+
+            const config = modulesConfig[moduleKey];
+            if (!config) return;
+
+            homeView.classList.add('hidden');
+            appView.classList.remove('hidden');
+            skeleton.classList.remove('hidden');
+            skeleton.style.opacity = '1';
+            frame.classList.remove('loaded');
+            
+            frame.src = config.url; 
+            title.innerText = config.title;
+            currentAppUrl = config.url;
+            
+            document.getElementById('module-glow').className = `absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-${config.color}/20 rounded-full blur-[100px] animate-pulse opacity-50`;
+            document.getElementById('module-icon-box').innerHTML = `<i data-lucide="${config.icon}" class="w-8 h-8 text-brand-${config.color}"></i>`;
+            document.getElementById('module-loading-title').innerText = config.title;
+            
+            lucide.createIcons();
+            activeBtn.className = 'nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-white/5 text-white ring-1 ring-white/10 shadow-sm shadow-black/20';
+            popoutBtn.classList.remove('hidden');
+
+            // Simulando carregamento se não houver iframe real local
+            setTimeout(() => {
+                skeleton.style.opacity = '0';
+                setTimeout(() => skeleton.classList.add('hidden'), 700);
+                frame.classList.add('loaded');
+            }, 1200);
+            
+            frame.onload = () => {
+                skeleton.style.opacity = '0';
+                setTimeout(() => skeleton.classList.add('hidden'), 700);
+                frame.classList.add('loaded');
+            };
+        }
+
+        function openExternal() {
+            if(currentAppUrl) window.open(currentAppUrl, '_blank');
+        }
+
+        // Função robusta para ler CSV (lida com aspas em números formatados)
+        function parseCSV(str) {
+            const arr = [];
+            let quote = false;
+            let row = [];
+            let col = '';
+            for (let c of str) {
+                if (c === '"' && quote) quote = false;
+                else if (c === '"' && !quote) quote = true;
+                else if (c === ',' && !quote) { row.push(col.trim()); col = ''; }
+                else if (c === '\n' && !quote) { row.push(col.trim()); arr.push(row); row = []; col = ''; }
+                else if (c !== '\r') col += c;
+            }
+            row.push(col.trim());
+            arr.push(row);
+            return arr;
+        }
+
+        // Gráfico Premium (Chart.js dinâmico com Google Sheets)
+        Chart.defaults.font.family = '"Plus Jakarta Sans", sans-serif';
+        Chart.defaults.color = '#71717a'; // zinc-500
+        
+        const ctx = document.getElementById('crmChart').getContext('2d');
+        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)'); // brand-indigo
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+        let crmChart; // Variável global para manter a instância do gráfico
+
+        async function carregarDadosPlanilha() {
+            try {
+                // Link CSV fornecido por você
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJFWclSmOeIDQwo5VepSJ5_XG-t-0OVr4FhWsVlmUA4t5wEk-bjTbZdOD1cXGcGnnZ6IBm2vGVZ8HQ/pub?gid=440281931&single=true&output=csv';
+                
+                const response = await fetch(sheetUrl);
+                const csvText = await response.text();
+                
+                const linhas = parseCSV(csvText);
+                const totaisPorAno = {}; // Objeto para armazenar a soma de cada ano
+                const dadosPorAno = {};  // Objeto para armazenar os pagamentos individuais
+
+                // O loop começa em 1 para pular o cabeçalho (Linha 1 do Sheets)
+                for (let i = 1; i < linhas.length; i++) {
+                    const colunas = linhas[i];
+                    
+                    // Verifica se existe a coluna A (Ano)
+                    if (colunas.length > 0) {
+                        const labelRaw = colunas[0];
+                        if (!labelRaw) continue;
+                        
+                        // Extrai o ano do texto (procura por 20xx na string da data/ano)
+                        const matchAno = labelRaw.match(/\b(20\d{2})\b/);
+                        const ano = matchAno ? matchAno[1] : labelRaw.trim();
+                        
+                        if (ano) {
+                            if (!dadosPorAno[ano]) dadosPorAno[ano] = [];
+
+                            // Percorre da Coluna B (índice 1) até M (índice 12) - Janeiro a Dezembro
+                            for (let j = 1; j <= 12; j++) {
+                                let valorBruto = colunas[j];
+                                
+                                if (valorBruto) {
+                                    // Limpa símbolos de moeda, espaços vazios ou traços (células vazias na folha)
+                                    valorBruto = valorBruto.replace(/[R$\s\-]/g, '');
+                                    
+                                    if (valorBruto.length > 0) {
+                                        // Converte o formato do Brasil para Float (ex: 1.250,50 -> 1250.50)
+                                        if (valorBruto.includes(',')) {
+                                            valorBruto = valorBruto.replace(/\./g, '').replace(',', '.');
+                                        } else if (valorBruto.includes('.')) {
+                                            // Evita falhas com pontos de milhar que não tenham vírgula no final (ex: 1.250)
+                                            if (valorBruto.split('.').length > 2 || !valorBruto.match(/\.\d{1,2}$/)) {
+                                                valorBruto = valorBruto.replace(/\./g, '');
+                                            }
+                                        }
+                                        
+                                        const valor = parseFloat(valorBruto);
+                                        
+                                        // Apenas contabiliza se o valor for numérico e maior que zero
+                                        if (!isNaN(valor) && valor > 0) {
+                                            totaisPorAno[ano] = (totaisPorAno[ano] || 0) + valor;
+                                            dadosPorAno[ano].push(valor); // Guarda registro para calcular a média
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Prepara os arrays para o gráfico, ordenados pelo ano cronologicamente
+                const labels = Object.keys(totaisPorAno).sort();
+                const dados = labels.map(ano => totaisPorAno[ano]);
+
+                // --- INÍCIO DA LÓGICA DAS METAS ---
+                if (labels.length > 0) {
+                    const anoAtualStr = labels[labels.length - 1]; // Último ano preenchido na planilha
+                    const anoPassadoStr = labels.length > 1 ? labels[labels.length - 2] : null;
+
+                    // 1. Meta Mensal de R$ 5.000
+                    const totalAnoAtual = totaisPorAno[anoAtualStr] || 0;
+                    const mesesComDadosAtual = dadosPorAno[anoAtualStr].length || 1; // Conta os meses que já renderam dividendos neste ano
+                    const mediaMensalAtual = totalAnoAtual / mesesComDadosAtual;
+                    const metaMensal = 5000; // SUA META AQUI
+                    const percentualMeta = Math.min((mediaMensalAtual / metaMensal) * 100, 100);
+
+                    document.getElementById('text-meta-mensal').innerText = `Média de ${anoAtualStr}: ${formatCurrency(mediaMensalAtual)} / R$ 5.000,00`;
+                    document.getElementById('valor-meta-mensal').innerText = `${((mediaMensalAtual / metaMensal) * 100).toFixed(1)}%`;
+                    document.getElementById('bar-meta-mensal').style.width = `${percentualMeta}%`;
+
+                    // 2. Crescimento Anual (Bater o ano anterior)
+                    if (anoPassadoStr) {
+                        const totalAnoPassado = totaisPorAno[anoPassadoStr] || 1; // Para evitar divisão por zero
+                        const percentualCrescimento = Math.min((totalAnoAtual / totalAnoPassado) * 100, 100);
+                        
+                        document.getElementById('titulo-meta-ano').innerText = `Superar ${anoPassadoStr}`;
+                        document.getElementById('text-meta-ano').innerText = `${formatCurrency(totalAnoAtual)} de ${formatCurrency(totalAnoPassado)}`;
+                        document.getElementById('valor-meta-ano').innerText = `${((totalAnoAtual / totalAnoPassado) * 100).toFixed(1)}%`;
+                        document.getElementById('bar-meta-ano').style.width = `${percentualCrescimento}%`;
+                    } else {
+                        document.getElementById('text-meta-ano').innerText = `Sem dados suficientes do ano anterior`;
+                    }
+                }
+                // --- FIM DA LÓGICA DAS METAS ---
+
+                // Renderiza o gráfico com os dados agregados
+                renderizarGrafico(labels, dados);
+
+            } catch (error) {
+                console.error("Erro ao puxar os dados do Google Sheets:", error);
+                // Dados fictícios de fallback caso a planilha saia do ar ou dê erro
+                renderizarGrafico(['2023', '2024', '2025'], [1500, 3200, 4800]);
+            }
+        }
+
+        function renderizarGrafico(labels, dados) {
+            if (crmChart) crmChart.destroy(); // Limpa o gráfico antigo antes de atualizar
+
+            crmChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Dividendos (R$)',
+                        data: dados,
+                        borderColor: '#6366f1',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#0a0a0a',
+                        pointBorderColor: '#6366f1',
+                        pointBorderWidth: 2,
+                        pointRadius: 0, // Esconde pontos por padrão
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4 // Curvas suaves
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 10, 10, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#a1a1aa',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { display: true, color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }, 
+                            border: { display: false },
+                            ticks: {
+                                callback: function(value) {
+                                    <comment-tag id="5">return 'R$ ' + value;</comment-tag id="5" text="Substituir a concatenação manual por `return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value);` garante que a formatação no eixo Y tenha a pontuação de milhar correta e siga a formatação local brasileira já adotada no tooltip." type="suggestion">
+                                }
+                            }
+                        },
+                        x: { 
+                            grid: { display: false, drawBorder: false }, 
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chama a função para puxar a planilha e montar o gráfico assim que a página carrega
+        carregarDadosPlanilha();
+    </script>
+</body>
+</html>
+
+*Sugestões adicionadas*
