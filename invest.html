@@ -56,7 +56,7 @@
         .light-mode .bg-glow-2 { background: rgba(129, 140, 248, 0.2); }
 
         /* Cards - Glassmorphism Premium */
-        .glass-card {
+        <comment-tag id="1">.glass-card {
             border-radius: 1.5rem;
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -67,7 +67,20 @@
             overflow: hidden;
         }
         .light-mode .glass-card { background-color: var(--card-light); border-color: rgba(255,255,255,0.8); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
-        .dark-mode .glass-card { background-color: var(--card-dark); border-color: rgba(255,255,255,0.08); }
+        .dark-mode .glass-card { background-color: var(--card-dark); border-color: rgba(255,255,255,0.08); }</comment-tag id="1" text="Para se aproximar do visual do Investidor 10, abandone o 'Glassmorphism' (fundo desfocado/translúcido) e adote o 'Flat Design'. 
+
+O Investidor 10 usa cartões com cores sólidas e bordas bem definidas, o que passa uma imagem mais séria e limpa.
+
+Sugestão de alteração:
+.glass-card {
+    border-radius: 0.75rem; /* Bordas menos arredondadas */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sombra mais sutil */
+    position: relative;
+    overflow: hidden;
+}
+.light-mode .glass-card { background-color: #ffffff; border-color: #e2e8f0; }
+.dark-mode .glass-card { background-color: #1e293b; border-color: #334155; box-shadow: none; }" type="suggestion">
 
         .glass-card.hover-effect:hover {
             transform: translateY(-6px);
@@ -224,8 +237,10 @@
 </head>
 <body class="dark dark-mode text-slate-800 dark:text-slate-100">
 
-    <div class="bg-glow-1"></div>
-    <div class="bg-glow-2"></div>
+    <comment-tag id="2"><div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div></comment-tag id="2" text="O site Investidor 10 tem um visual muito sóbrio e profissional (estilo Fintech/Bancário), geralmente com fundos de cor sólida, sem elementos flutuantes ou brilhos neon de fundo.
+
+Sugiro remover (ou comentar) completamente essas duas divs de 'glow' para limpar o fundo." type="suggestion">
 
     <div id="loading-overlay">
         <div id="loading-spinner" class="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(34,211,238,0.5)]"></div>
@@ -235,7 +250,10 @@
 
     <nav class="max-w-[85rem] mx-auto p-6 md:py-8 flex justify-between items-center animate-fade-in">
         <div class="flex items-center gap-4">
-            <div class="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <comment-tag id="3"><div class="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-cyan-500/20"></comment-tag id="3" text="Para ficar parecido com o layout do Investidor 10 (que usa uma cor primária sólida azul/índigo), substitua esse gradiente complexo por uma cor sólida mais sóbria e reduza o arredondamento (border-radius).
+
+Sugestão:
+<div class='w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-md'>" type="suggestion">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
@@ -268,10 +286,16 @@
                 <div class="card-accent-top"></div>
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-cyan-500/10 rounded-lg text-cyan-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-                    <p class="text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest">Patrimônio Atual</p>
+                    <comment-tag id="4"><p class="text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest">Patrimônio Atual</p></comment-tag id="4" text="Títulos e rótulos no Investidor 10 são mais legíveis, sem espaçamento exagerado (tracking-widest) e muitas vezes usam Title Case em vez de UPPERCASE completo, o que remete a uma pegada mais corporativa.
+
+Sugiro mudar todas essas tags <p> de cabeçalho para algo como:
+<p class='text-slate-500 dark:text-slate-400 text-sm font-semibold'>Patrimônio Atual</p>" type="suggestion">
                 </div>
 
-                <h2 id="total-atual" class="text-3xl xl:text-4xl font-black text-gradient-cyan mt-2 value-to-blur blur-value">R$ 0,00</h2>
+                <comment-tag id="5"><h2 id="total-atual" class="text-3xl xl:text-4xl font-black text-gradient-cyan mt-2 value-to-blur blur-value">R$ 0,00</h2></comment-tag id="5" text="Para remover o aspecto 'Cyberpunk/Web3' e trazer a autoridade do Investidor 10, remova a classe 'text-gradient-cyan'. Use cores sólidas e fortes para os valores de KPI.
+
+Sugestão:
+<h2 id='total-atual' class='text-3xl xl:text-4xl font-bold text-slate-800 dark:text-white mt-2 value-to-blur blur-value'>R$ 0,00</h2>" type="suggestion">
                 <div id="perc-total" class="mt-3 text-[11px] font-bold px-3 py-1 rounded-full inline-block bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">--</div>
             </div>
 
@@ -320,36 +344,54 @@
             </div>
         </div>
 
-        <!-- Busca de Cotação em Tempo Real via Brapi -->
-        <div class="glass-card hover-effect p-6 md:p-8 mb-10 animate-fade-in delay-300" style="border-left: 4px solid #a855f7;">
-            <div class="flex items-start gap-4 mb-6">
-                <div class="p-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-purple-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">Cotação em Tempo Real</h3>
-                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Busque o preço atual de qualquer ativo na B3 (Ações, FIIs, BDRs)</p>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="relative flex-1">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <!-- Cotação e Alocação Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10 animate-fade-in delay-300">
+            
+            <!-- Busca de Cotação em Tempo Real via Brapi -->
+            <div class="glass-card hover-effect p-6 md:p-8 flex flex-col h-full" style="border-left: 4px solid #a855f7;">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="p-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-purple-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-500 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
                     </div>
-                    <input type="text" id="brapi-input" onkeydown="if(event.key === 'Enter') buscarCotacaoBrapi()" placeholder="Digite o ticker (ex: PETR4, HGLG11)..." class="w-full bg-slate-100/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all uppercase placeholder-slate-400">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">Cotação</h3>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Busque ativos na B3</p>
+                    </div>
                 </div>
-                <button onclick="buscarCotacaoBrapi()" class="px-8 py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:-translate-y-1">
-                    Buscar Ativo
-                </button>
+
+                <div class="flex flex-col xl:flex-row gap-4">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="brapi-input" onkeydown="if(event.key === 'Enter') buscarCotacaoBrapi()" placeholder="Ticker..." class="w-full bg-slate-100/80 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-12 pr-4 py-3.5 text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all uppercase placeholder-slate-400">
+                    </div>
+                    <button onclick="buscarCotacaoBrapi()" class="px-6 py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:-translate-y-1 whitespace-nowrap">
+                        Buscar
+                    </button>
+                </div>
+
+                <!-- Área de Resultado da Brapi -->
+                <div id="brapi-result" class="mt-5 hidden overflow-hidden rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 p-5 transition-all flex-1 flex flex-col justify-center">
+                    <!-- Conteúdo injetado pelo JavaScript -->
+                </div>
             </div>
 
-            <!-- Área de Resultado da Brapi -->
-            <div id="brapi-result" class="mt-5 hidden overflow-hidden rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 p-5 transition-all">
-                <!-- Conteúdo injetado pelo JavaScript -->
+            <!-- Alocação de Carteira -->
+            <div class="glass-card hover-effect p-6 md:p-8 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">Alocação</h3>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Distribuição por classe de ativo</p>
+                    </div>
+                </div>
+                <div class="flex-1 w-full relative flex justify-center min-h-[220px]">
+                    <canvas id="chartAlocacaoTipo"></canvas>
+                </div>
             </div>
+
         </div>
 
         <!-- Raio-X por Ativo -->
@@ -397,26 +439,33 @@
             </div>
         </div>
 
-        <!-- Gráficos Gerais -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-            <div class="glass-card hover-effect p-6 md:p-8">
-                <div class="flex justify-between items-start mb-6">
+        <!-- Dividendos Recebidos (Novo Layout Full Width) -->
+        <div class="glass-card hover-effect p-6 md:p-8 mb-10 relative overflow-hidden animate-fade-in delay-300 group">
+            <div class="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-[80px] -z-10 group-hover:bg-emerald-500/20 transition-colors duration-700"></div>
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-xl border border-emerald-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
                     <div>
-                        <h3 class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Dividendos Recebidos</h3>
-                        <p class="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1">Histórico anual comparativo</p>
+                        <h3 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">Dividendos Recebidos</h3>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Histórico de rendimentos na carteira</p>
                     </div>
                 </div>
-                <div class="h-72 w-full"><canvas id="chartDividendosAnual"></canvas></div>
+                <div class="w-full md:w-64 relative">
+                    <select id="filtro-dividendos" onchange="renderCharts()" class="w-full appearance-none bg-slate-100/50 dark:bg-slate-800/50 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-10 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent cursor-pointer backdrop-blur-md shadow-inner transition-all hover:bg-slate-200/50 dark:hover:bg-slate-700/50">
+                        <option value="12m">Últimos 12 Meses</option>
+                        <option value="all">Todo o Período</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
             </div>
             
-            <div class="glass-card hover-effect p-6 md:p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Alocação de Carteira</h3>
-                        <p class="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1">Distribuição por classe de ativo</p>
-                    </div>
-                </div>
-                <div class="h-72 w-full relative flex justify-center"><canvas id="chartAlocacaoTipo"></canvas></div>
+            <div class="h-80 w-full relative">
+                <canvas id="chartDividendosAnual"></canvas>
             </div>
         </div>
 
@@ -1099,23 +1148,35 @@
             if(charts.divs) charts.divs.destroy();
             if(charts.aloc) charts.aloc.destroy();
 
-            const anosDisponiveis = Object.keys(dividendosHistorico).sort((a,b) => b-a);
+            // 1. DIVIDENDOS RECEBIDOS (Timeline Plana)
+            let flatData = [];
+            let flatLabels = [];
+            const anosDisponiveis = Object.keys(dividendosHistorico).sort();
             
-            const cores = [
-                { bg: 'rgba(34, 211, 238, 0.8)', hover: '#06b6d4' },  
-                { bg: 'rgba(129, 140, 248, 0.8)', hover: '#6366f1' }, 
-                { bg: 'rgba(16, 185, 129, 0.8)', hover: '#059669' },  
-                { bg: 'rgba(244, 63, 94, 0.8)', hover: '#e11d48' }    
-            ];
-            
-            const datasets = anosDisponiveis.length > 0 ? anosDisponiveis.map((ano, idx) => ({
-                label: ano,
-                data: dividendosHistorico[ano].map(d => d.valor),
-                backgroundColor: cores[idx % cores.length].bg,
-                hoverBackgroundColor: cores[idx % cores.length].hover,
-                borderRadius: 4,
-                barThickness: window.innerWidth > 768 ? 12 : 6
-            })) : [{ label: 'Sem Dados', data: Array(12).fill(0), backgroundColor: '#ccc' }];
+            anosDisponiveis.forEach(ano => {
+                dividendosHistorico[ano].forEach(d => {
+                    flatLabels.push(`${d.mes}/${ano.slice(-2)}`);
+                    flatData.push(d.valor);
+                });
+            });
+
+            // Encontrar o último mês com proventos para não mostrar os meses em branco do futuro
+            let lastIdx = flatData.length - 1;
+            while(lastIdx >= 0 && flatData[lastIdx] === 0) {
+                lastIdx--;
+            }
+            if (lastIdx < 0) lastIdx = flatData.length - 1;
+
+            // Fatiar até o mês atual/último mês pago
+            let labelsToView = flatLabels.slice(0, lastIdx + 1);
+            let dataToView = flatData.slice(0, lastIdx + 1);
+
+            // Aplicar Filtro
+            const filtroDiv = document.getElementById('filtro-dividendos')?.value || '12m';
+            if (filtroDiv === '12m') {
+                labelsToView = labelsToView.slice(-12);
+                dataToView = dataToView.slice(-12);
+            }
 
             const commonTooltipConfig = {
                 backgroundColor: tooltipBg, titleColor: textColor, bodyColor: textColor,
@@ -1127,17 +1188,27 @@
             if (ctxDivs) {
                 charts.divs = new Chart(ctxDivs, {
                     type: 'bar',
-                    data: { labels: NOMES_MESES, datasets: datasets },
+                    data: { 
+                        labels: labelsToView, 
+                        datasets: [{
+                            label: 'Rendimento',
+                            data: dataToView,
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)', // Cor verde (emerald)
+                            hoverBackgroundColor: '#10b981',
+                            borderRadius: 6,
+                            barThickness: window.innerWidth > 768 ? 24 : 12
+                        }] 
+                    },
                     options: {
                         maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         plugins: { 
-                            legend: { position: 'top', align: 'end', labels: { boxWidth: 10, usePointStyle: true, font: { weight: '600' } } },
+                            legend: { display: false },
                             tooltip: {
                                 ...commonTooltipConfig,
                                 callbacks: {
                                     label: function(context) {
-                                        return `${context.dataset.label}: ${fmtBRL(context.parsed.y)}`;
+                                        return `Total Recebido: ${fmtBRL(context.parsed.y)}`;
                                     }
                                 }
                             }
@@ -1150,6 +1221,7 @@
                 });
             }
 
+            // 2. ALOCAÇÃO TIPO
             const tipoLabels = [...new Set(fullData.map(d => d.tipo))];
             const tipoDataValues = tipoLabels.map(l => fullData.filter(d => d.tipo === l).reduce((s, a) => s + a.atual, 0));
 
